@@ -1,13 +1,25 @@
+// Import required packages
 const express = require("express");
 const cors = require("cors");
-const app = express();
-const { MongoClient, ServerApiVersion } = require("mongodb");
-const port = process.env.PORT || 3000;
+const app = express(); // Create an instance of an Express server
+const { MongoClient, ServerApiVersion } = require("mongodb"); // Import MongoDB client
+const port = process.env.PORT || 3000; // Use environment port or default to 3000
 
+// ----------------- MIDDLEWARE -----------------
+
+// Allow requests from different origins (cross-origin)
+app.use(cors());
+
+// Parse incoming JSON data in request body (needed for req.body to work)
+app.use(express.json());
+
+// ----------------- MONGODB SETUP -----------------
+
+// MongoDB connection string
 const uri =
   "mongodb+srv://simpleDBUser:TNDkgIud1EpEwyAv@cluster0.af9wvor.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+// Create MongoClient instance with configuration options
 const client = new MongoClient(uri, {
   serverApi: {
     version: ServerApiVersion.v1,
@@ -16,32 +28,55 @@ const client = new MongoClient(uri, {
   },
 });
 
+// ----------------- MAIN FUNCTION -----------------
+
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect to MongoDB cluster
     await client.connect();
-    // Send a ping to confirm a successful connection
+
+    // Define your database and collection
+    const database = client.db("usersdb"); // Choose DB name
+    const usersCollection = database.collection("users"); // Choose collection name
+
+    // POST endpoint to receive and store user data
+    app.post("/users", async (req, res) => {
+      const newUser = req.body; // Get user data from request body
+      console.log("data in the server", newUser); // Log the data on the server
+
+      // Insert user into the MongoDB collection
+      const result = await usersCollection.insertOne(newUser);
+
+      // Send the result back to the frontend
+      res.send(result);
+    });
+
+    // Confirm connection with a ping
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
   } finally {
-    // Ensures that the client will close when you finish/error
-    await client.close();
+    // ❌ DO NOT close the client, or your routes will stop working
+    // await client.close();
   }
 }
+
+// Call the async function and catch any errors
 run().catch(console.dir);
-//middleware
-app.use(cors());
-app.use(express.json());
 
-// user : simpleDBUser
-// pass : TNDkgIud1EpEwyAv
+// ----------------- BASIC ROUTES -----------------
 
+// Default GET route to check if server is running
 app.get("/", (req, res) => {
   res.send("Simple CRUD Server Running");
 });
 
+// Start the Express server
 app.listen(port, () => {
   console.log(`Simple CRUD Server Running on: ${port}`);
 });
+
+// MongoDB credentials (DO NOT include in production)
+/// user: simpleDBUser
+/// pass: TNDkgIud1EpEwyAv
