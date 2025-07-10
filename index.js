@@ -39,6 +39,12 @@ async function run() {
     const database = client.db("usersdb"); // Choose DB name
     const usersCollection = database.collection("users"); // Choose collection name
 
+    app.get("/users", async (req, res) => {
+      const cursor = usersCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
+
     // POST endpoint to receive and store user data
     app.post("/users", async (req, res) => {
       const newUser = req.body; // Get user data from request body
