@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const app = express(); // Create an instance of an Express server
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb"); // Import MongoDB client
+
 const port = process.env.PORT || 3000; // Use environment port or default to 3000
 
 // ----------------- MIDDLEWARE -----------------
@@ -61,6 +62,29 @@ async function run() {
       const result = await usersCollection.insertOne(newUser);
 
       // Send the result back to the frontend
+      res.send(result);
+    });
+
+    app.put("/users/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+
+      const user = req.body;
+
+      const updatedDoc = {
+        $set: {
+          name: user.name,
+          email: user.email,
+        },
+      };
+      const options = { upsert: true };
+      console.log(user);
+      const result = await usersCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
+
       res.send(result);
     });
 
