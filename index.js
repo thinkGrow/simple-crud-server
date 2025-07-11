@@ -2,7 +2,7 @@
 const express = require("express");
 const cors = require("cors");
 const app = express(); // Create an instance of an Express server
-const { MongoClient, ServerApiVersion } = require("mongodb"); // Import MongoDB client
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb"); // Import MongoDB client
 const port = process.env.PORT || 3000; // Use environment port or default to 3000
 
 // ----------------- MIDDLEWARE -----------------
@@ -59,9 +59,9 @@ async function run() {
 
     app.delete("/users/:id", async (req, res) => {
       const id = req.params.id;
-      // const query = { _id: new ObjectId(id) };
-      // const result = await usersCollection.deleteOne(query);
-      // res.send(result);
+      const query = { _id: new ObjectId(id) };
+      const result = await usersCollection.deleteOne(query);
+      res.send(result);
 
       console.log(id);
     });
